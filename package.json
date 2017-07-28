@@ -1,0 +1,28 @@
+{
+  "name": "saferroadsau-backend",
+  "version": "0.1.0",
+  "description": "The Backend For SafeRoads System",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShawTech/SafeRoads-Backend.git"
+  },
+  "keywords": [
+    "GovHack",
+    "Hackathon",
+    "Backend",
+    "ExpressJS"
+  ],
+  "author": "ShawTech",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ShawTech/SafeRoads-Backend/issues"
+  },
+  "homepage": "https://github.com/ShawTech/SafeRoads-Backend#readme",
+  "dependencies": {
+    "express": "^4.15.3"
+  }
+}
