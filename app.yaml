@@ -1,5 +1,0 @@
-# This is the configuration file for Google App Engine
-# PLEASE DO NOT DELETE
-
-runtime: nodejs
-env: flex
