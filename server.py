@@ -70,8 +70,15 @@ class BackendState:
 
 
 def recalculate_probabilities(state):
-    state.heatmap_crash_data = \
-        [TaheapOutput(LatLng(-37.8136 + random() * 6, 144.9631 - 30 * random()), random()) for _ in range(10000)]
+    state.heatmap_crash_data = [
+            TaheapOutput(
+                LatLng(
+                    -37.8136 + random() - 0.5,
+                    144.9631 + random() - 0.5,
+                ),
+                random()
+            ) for _ in range(50)
+        ]
 
 
 print("Starting server")
@@ -87,8 +94,6 @@ current_state = BackendState([])
 def crash_probability():
     return str(json.dumps([x.json() for x in current_state.heatmap_crash_data]))
 
-    print("\n\t~~ [!!]: Socket IO connected ~~\n")
-
-set_interval(1, recalculate_probabilities, current_state)
+set_interval(10, recalculate_probabilities, current_state)
 
 app.run(port=8080, debug=True)
