@@ -62,30 +62,34 @@ heatmap_crash_data = [
     TaheapOutput(LatLng(-37.8136, 144.9631), 0.5)
 ]
 
-# Flask 
+# Flask
 app = Flask(__name__)
 CORS(app)
 
 # Socket IO
 endpoint_crash_data = 'crash_data'
 socketio = SocketIO(app)
+test = 0
 
-
-@socketio.on('connection')
+@socketio.on('connect')
 def on_connect():
-    emit_crash_data()
+    print(test)
 
+    print("\n\t~~ [!!]: Socket IO connected ~~\n")
 
 def emit_crash_data():
     print("This is a test")
+    global test
+    print(test)
+    test += 1
     socketio.emit(
         endpoint_crash_data,
-        {"test": "test"},
+        {"test": test},
       namespace='/'
     )
 
-
 print("Starting timer")
-ticker = set_interval(1, emit_crash_data)
+ticker = set_interval(5, emit_crash_data)
 
-socketio.run(app, port=8080, debug=True)
+if __name__ == "__main__":
+    socketio.run(app, port=8080, debug=True)
