@@ -76,7 +76,7 @@ def recalculate_probabilities(state):
 
 print("Starting server")
 
-# Flask 
+# Flask
 app = Flask(__name__)
 CORS(app)
 
@@ -87,6 +87,7 @@ current_state = BackendState([])
 def crash_probability():
     return str(json.dumps([x.json() for x in current_state.heatmap_crash_data]))
 
+    print("\n\t~~ [!!]: Socket IO connected ~~\n")
 
 set_interval(1, recalculate_probabilities, current_state)
 
