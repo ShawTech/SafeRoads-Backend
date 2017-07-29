@@ -1,16 +1,12 @@
-from json import JSONEncoder
-
+import json
 from flask import Flask
-from flask_socketio import SocketIO
-
 from flask_cors import CORS
+
+from random import random
 
 from threading import Event, Thread
 
-
-class DictEncoder(JSONEncoder):
-    def default(self, o):
-        return o.__dict__
+from random import randint
 
 
 # ML data model
@@ -20,6 +16,12 @@ class LatLng:
     def __init__(self, lat, lng):
         self.lat = lat
         self.lng = lng
+
+    def json(self):
+        return {
+            'lat': self.lat,
+            'lng': self.lng
+        }
 
 
 class TaheapInput:
@@ -37,6 +39,12 @@ class TaheapOutput:
     def __init__(self, latlng, crash_probability):
         self.latlng = latlng
         self.crash_probability = crash_probability
+
+    def json(self):
+        return {
+            'latlng': self.latlng.json(),
+            'crash_probability': self.crash_probability
+        }
 
 
 def set_interval(interval, func, *args):
@@ -56,36 +64,30 @@ def set_interval(interval, func, *args):
     return stopped.set
 
 
+class BackendState:
+    def __init__(self, heatmap_crash_data):
+        self.heatmap_crash_data = heatmap_crash_data
+
+
+def recalculate_probabilities(state):
+    state.heatmap_crash_data = \
+        [TaheapOutput(LatLng(-37.8136 + random() * 6, 144.9631 - 30 * random()), random()) for _ in range(10000)]
+
+
 print("Starting server")
-# Backend state
-heatmap_crash_data = [
-    TaheapOutput(LatLng(-37.8136, 144.9631), 0.5)
-]
 
 # Flask 
 app = Flask(__name__)
 CORS(app)
 
-# Socket IO
-endpoint_crash_data = 'crash_data'
-socketio = SocketIO(app)
+current_state = BackendState([])
 
 
-@socketio.on('connection')
-def on_connect():
-    emit_crash_data()
+@app.route('/crash/probability')
+def crash_probability():
+    return str(json.dumps([x.json() for x in current_state.heatmap_crash_data]))
 
 
-def emit_crash_data():
-    print("This is a test")
-    socketio.emit(
-        endpoint_crash_data,
-        {"test": "test"},
-      namespace='/'
-    )
+set_interval(1, recalculate_probabilities, current_state)
 
-
-print("Starting timer")
-ticker = set_interval(1, emit_crash_data)
-
-socketio.run(app, port=8080, debug=True)
+app.run(port=8080, debug=True)
