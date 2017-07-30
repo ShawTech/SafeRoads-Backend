@@ -68,16 +68,7 @@ class BackendState:
 
 
 def recalculate_probabilities(state):
-    state.heatmap_crash_data = [
-        TaheapOutput(
-            LatLng(
-                -37.8136 + (random() - 0.5) * 0.1,
-                144.9631 + (random() - 0.5) * 0.1,
-            ),
-            random()
-        ) for _ in range(3000)
-        ]
-
+    state.heatmap_crash_data = random_uniform_crash_data()
 
 print("Starting server")
 
@@ -90,47 +81,83 @@ current_state = BackendState([])
 
 
 # Routes
-@app.route('/crash/probability/')
+@app.route('/crash/probability')
 def crash_probability():
-    return crash_probability_uniform()
+    return str(json.dumps([x.json() for x in current_state.heatmap_crash_data]))
 
 
 @app.route('/crash/probability/test/random')
 def crash_probability_random():
     return str(json.dumps([
-        TaheapOutput(
-            LatLng(
-                -37.8136 + (random() - 0.5) * 0.1,
-                144.9631 + (random() - 0.5) * 0.1,
-            ),
-            random()
-        ) for _ in range(3000)
-    ]))
+                              TaheapOutput(
+                                  LatLng(
+                                      -37.8136 + (random() - 0.5) * 0.1,
+                                      144.9631 + (random() - 0.5) * 0.1,
+                                  ),
+                                  random()
+                              ).json() for _ in range(3000)
+                          ]))
 
 
 @app.route('/crash/probability/test/uniform')
 def crash_probability_uniform():
-    return str(json.dumps(uniform_map_distribution(
-        55,
-        55,
-        lambda x, y:
-            TaheapOutput(
-                LatLng(
-                    -37.8136 - 0.5 + x / 55,
-                    144.9631 - 0.5 + y / 55
-                ),
-                random()
-            )
-    )))
+    return random_uniform_crash_data()
+
+
+def create_relative_taheap_output(x, y):
+    probability = random()
+    count = int(probability * 5)
+    return [TaheapOutput(
+        LatLng(
+            -37.8136 + (-0.5 + x / 100) * 0.1 + (random() - 0.5) * 0.005,
+            144.9631 + (-0.5 + y / 100) * 0.1 + (random() - 0.5) * 0.005
+        ),
+        probability
+    ) for _ in range(count)]
+
+
+def random_uniform_crash_data():
+    data = uniform_map_distribution(
+        66,
+        66,
+        create_relative_taheap_output
+    )
+    return data
+
+
+def clustered_map_distribution(width, height, generate_output):
+    outputs = [None] * (width * height)
+    x = 0
+    while x < width:
+        y = 0
+        actual_y = 0
+        while y < height:
+            sub_outputs = generate_output(x, actual_y)
+            point_index = 0
+            while point_index < len(sub_outputs) and y < height:
+                outputs[x * width + y] = sub_outputs[point_index]
+                point_index += 1
+                y += 1
+                actual_y += 1
+        x += 1
+    return outputs
 
 
 def uniform_map_distribution(width, height, generate_output):
     outputs = [None] * (width * height)
     x = 0
-    while x < 55:
+    while x < width:
         y = 0
-        while y < 55:
-            outputs[x * 55 + y] = generate_output(x, y)
+        actual_y = 0
+        while y < height:
+            sub_outputs = generate_output(x, actual_y)
+            point_index = 0
+            while point_index < len(sub_outputs) and y < height:
+                outputs[x * width + y] = sub_outputs[point_index]
+                point_index += 1
+                y += 1
+            actual_y += 1
+        x += 1
     return outputs
 
 recalculate_probabilities(current_state)
