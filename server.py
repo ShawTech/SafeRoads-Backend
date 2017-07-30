@@ -109,8 +109,8 @@ def create_relative_taheap_output(x, y):
     count = int(probability * 5)
     return [TaheapOutput(
         LatLng(
-            -37.8136 + (-0.5 + x / 100) * 0.1 + (random() - 0.5) * 0.005,
-            144.9631 + (-0.5 + y / 100) * 0.1 + (random() - 0.5) * 0.005
+            -37.8136 + (-0.5 + x / 100) * 0.1 * (200/66) + (random() - 0.5) * 0.005,
+            144.9631 + (-0.5 + y / 100) * 0.1 * (200/66) + (random() - 0.5) * 0.005
         ),
         probability
     ) for _ in range(count)]
@@ -118,8 +118,8 @@ def create_relative_taheap_output(x, y):
 
 def random_uniform_crash_data():
     data = uniform_map_distribution(
-        66,
-        66,
+        200,
+        200,
         create_relative_taheap_output
     )
     return data
