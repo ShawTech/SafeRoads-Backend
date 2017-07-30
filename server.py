@@ -165,4 +165,4 @@ recalculate_probabilities(current_state)
 set_interval(10, recalculate_probabilities, current_state)
 
 # Now run the server
-app.run(port=8080, debug=True)
+app.run(port=3141, debug=True)
