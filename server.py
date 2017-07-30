@@ -6,8 +6,6 @@ from random import random
 
 from threading import Event, Thread
 
-from random import randint
-
 
 # ML data model
 class LatLng:
@@ -71,13 +69,13 @@ class BackendState:
 
 def recalculate_probabilities(state):
     state.heatmap_crash_data = [
-            TaheapOutput(
-                LatLng(
-                    -37.8136 + random() - 0.5,
-                    144.9631 + random() - 0.5,
-                ),
-                random()
-            ) for _ in range(50)
+        TaheapOutput(
+            LatLng(
+                -37.8136 + (random() - 0.5) * 0.1,
+                144.9631 + (random() - 0.5) * 0.1,
+            ),
+            random()
+        ) for _ in range(3000)
         ]
 
 
@@ -87,13 +85,57 @@ print("Starting server")
 app = Flask(__name__)
 CORS(app)
 
+# State
 current_state = BackendState([])
 
 
-@app.route('/crash/probability')
+# Routes
+@app.route('/crash/probability/')
 def crash_probability():
-    return str(json.dumps([x.json() for x in current_state.heatmap_crash_data]))
+    return crash_probability_uniform()
 
+
+@app.route('/crash/probability/test/random')
+def crash_probability_random():
+    return str(json.dumps([
+        TaheapOutput(
+            LatLng(
+                -37.8136 + (random() - 0.5) * 0.1,
+                144.9631 + (random() - 0.5) * 0.1,
+            ),
+            random()
+        ) for _ in range(3000)
+    ]))
+
+
+@app.route('/crash/probability/test/uniform')
+def crash_probability_uniform():
+    return str(json.dumps(uniform_map_distribution(
+        55,
+        55,
+        lambda x, y:
+            TaheapOutput(
+                LatLng(
+                    -37.8136 - 0.5 + x / 55,
+                    144.9631 - 0.5 + y / 55
+                ),
+                random()
+            )
+    )))
+
+
+def uniform_map_distribution(width, height, generate_output):
+    outputs = [None] * (width * height)
+    x = 0
+    while x < 55:
+        y = 0
+        while y < 55:
+            outputs[x * 55 + y] = generate_output(x, y)
+    return outputs
+
+recalculate_probabilities(current_state)
+# Recalculate probabilities every so often.
 set_interval(10, recalculate_probabilities, current_state)
 
+# Now run the server
 app.run(port=8080, debug=True)
